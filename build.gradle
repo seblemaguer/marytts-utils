@@ -62,21 +62,21 @@ task generateDotFromTree() {
 }
 
 
-// task dumpTree(dependsOn:generateDotFromTree) {
-//     description "Dump the tree in the svg format (needs graphviz installed). The mary tree is given by the system property \"tree_path\""
-//     def tree_filename = System.getProperty("tree_path")
-//     def basename = (new File(tree_filename)).name.split("\\.")[0]
+task dumpTree(dependsOn:generateDotFromTree) {
+    description "Dump the tree in the svg format (needs graphviz installed). The mary tree is given by the system property \"tree_path\""
+    def tree_filename = System.getProperty("tree_path")
+    def basename = (new File(tree_filename)).name.split("\\.")[0]
 
-//     inputs.files "$buildDir/${basename}.dot",
-//     outputs.files "$buildDir/${basename}.svg"
+    inputs.files "$buildDir/${basename}.dot"
+    outputs.files "$buildDir/${basename}.svg"
 
-//     doLast {
+    doLast {
 
-//         (new File("$buildDir")).mkdir()
+        (new File("$buildDir")).mkdir()
 
-//         // Convert dot to SVG
-//         exec {
-//             commandLine ["dot", "-Tsvg", "$buildDir/${basename}.dot", ">", "$buildDir/${basename}.svg"]
-//         }
-//     }
-// }
+        // Convert dot to SVG
+        exec {
+            commandLine "bash", "-c", "dot -Tsvg $buildDir/${basename}.dot > $buildDir/${basename}.svg"
+        }
+    }
+}
