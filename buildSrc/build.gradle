@@ -1,0 +1,28 @@
+plugins {
+    id 'groovy'
+}
+
+group 'de.dfki.mary'
+version '5.2-SNAPSHOT'
+
+repositories {
+    maven {
+        url 'https://oss.jfrog.org/artifactory/repo'
+    }
+}
+
+def maryttsVersion = '5.2-SNAPSHOT'
+
+dependencies {
+    compile localGroovy()
+    compile group:'org.codehaus.gpars', name: 'gpars', version:'1.1.0'
+    compile group: 'de.dfki.mary', name: 'marytts-runtime', version: maryttsVersion
+    // ['de', 'en', 'fr', 'it', 'ru', 'sv', 'te', 'tr'].each { locale ->
+    //     runtime group: 'de.dfki.mary', name: "marytts-lang-$locale", version: maryttsVersion
+    // }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.8'
+    distributionUrl = 'https://services.gradle.org/distributions/gradle-2.8-all.zip'
+}
