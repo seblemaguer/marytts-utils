@@ -43,6 +43,10 @@ import marytts.cart.*;
 task generateDotFromTree() {
     description "Generate the dot file from a given tree. The mary tree is given by the system property \"tree_path\""
     def tree_filename = System.getProperty("tree_path")
+    def max_level = -1
+    if (System.getProperty("max_level") != null) {
+        max_level = Integer.parseInt(System.getProperty("max_level"))
+    }
     def basename = (new File(tree_filename)).name.split("\\.")[0]
 
     inputs.files tree_filename
@@ -56,13 +60,13 @@ task generateDotFromTree() {
         MaryCARTReader tree_read = new MaryCARTReader();
         CART tree = tree_read.load(tree_filename);
         DecisionNode root = (DecisionNode) tree.getRootNode();
-        DumpMaryTree.dump_dot(root, "$buildDir/${basename}.dot");
+        DumpMaryTree.dump_dot(root, "$buildDir/${basename}.dot", max_level);
 
     }
 }
 
 
-task dumpTree(dependsOn:generateDotFromTree) {
+task dumpTreeSvg(dependsOn:generateDotFromTree) {
     description "Dump the tree in the svg format (needs graphviz installed). The mary tree is given by the system property \"tree_path\""
     def tree_filename = System.getProperty("tree_path")
     def basename = (new File(tree_filename)).name.split("\\.")[0]
@@ -78,5 +82,51 @@ task dumpTree(dependsOn:generateDotFromTree) {
         exec {
             commandLine "bash", "-c", "dot -Tsvg $buildDir/${basename}.dot > $buildDir/${basename}.svg"
         }
+    }
+}
+
+
+task dumpTreePdf(dependsOn:generateDotFromTree) {
+    description "Dump the tree in the pdf format (needs graphviz installed). The mary tree is given by the system property \"tree_path\""
+    def tree_filename = System.getProperty("tree_path")
+    def basename = (new File(tree_filename)).name.split("\\.")[0]
+
+    inputs.files "$buildDir/${basename}.dot"
+    outputs.files "$buildDir/${basename}.pdf"
+
+    doLast {
+
+        (new File("$buildDir")).mkdir()
+
+        // Convert dot to SVG
+        exec {
+            commandLine "bash", "-c", "dot -Tpdf $buildDir/${basename}.dot > $buildDir/${basename}.pdf"
+        }
+    }
+}
+
+
+task dumpTreeStd() {
+    description "Dump the given tree on standard output. The mary tree is given by the system property \"tree_path\""
+    def tree_filename = System.getProperty("tree_path")
+    def max_level = -1
+    if (System.getProperty("max_level") != null) {
+        max_level = Integer.parseInt(System.getProperty("max_level"))
+    }
+    def basename = (new File(tree_filename)).name.split("\\.")[0]
+
+    inputs.files tree_filename
+    outputs.files "$buildDir/${basename}.dot"
+
+    doLast {
+
+        (new File("$buildDir")).mkdir()
+
+        // Generate dot
+        MaryCARTReader tree_read = new MaryCARTReader();
+        CART tree = tree_read.load(tree_filename);
+        DecisionNode root = (DecisionNode) tree.getRootNode();
+        DumpMaryTree.dump(root, 0, max_level);
+
     }
 }
